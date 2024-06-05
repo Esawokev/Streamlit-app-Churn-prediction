@@ -1,0 +1,10 @@
+your_project/
+├── main.py
+├── pages/
+│   ├── __init__.py
+│   ├── home.py
+│   ├── data.py
+│   ├── dashboard.py
+│   ├── predict.py
+│   └── history.py
+└── requirements.txt

@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-from pages import Home,Data,Dashboard,Predict,History
+from pages import Home,Data_page,Dashboard,Predict,History
 
 # Set page configuration
 st.set_page_config(
@@ -16,7 +16,7 @@ def main():
     st.sidebar.title("Navigation")
     pages = {
         "Home": Home,
-        "01_Data":Data,
+        "01_Data_page":Data,
         "02_Dashboard":Dashboard,
         "03_Predict":Predict,
         "04_History":History
