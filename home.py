@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import base64
 
 st.set_page_config(
     page_title='Home page',
@@ -7,30 +8,32 @@ st.set_page_config(
     page_icon=':house:'
 )
 
-# Define custom CSS to set the background image
-def set_background_image():
-    # Get the absolute path of the directory containing the script
-    current_dir = os.path.dirname(os.path.abspath("C:/Users/lucky/Desktop/LP4/Streamlit-Model-deployment/Streamlit-app-Churn-prediction/Utils/background.jpg"))
-    # Construct the path to the background image
-    background_img_path = os.path.join(current_dir, 'utils', 'background.jpg')
+# Function to load an image and return the base64 encoded string
+def get_base64_encoded_image(image_path):
+    with open('utils/background.jpg', "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
 
-    # Define the CSS with the absolute path to the image
-    page_bg_img = f"""
+# Function to set background image
+def set_background_image(image_path):
+    img_base64 = get_base64_encoded_image(image_path)
+    page_bg_img = f'''
     <style>
     .stApp {{
-        background: url("C:/Users/lucky/Desktop/LP4/Streamlit-Model-deployment/Streamlit-app-Churn-prediction/Utils/background.jpg"") no-repeat center center fixed;
+        background-image: url("data:image/jpg;base64,{img_base64}");
         background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
     }}
     </style>
-    """
-
-    # Inject the custom CSS into the Streamlit app
+    '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Apply the background image
-set_background_image()
+set_background_image('utils/background.jpg')
 
 # Example content to demonstrate the background
 st.title("Customer Churn Prediction App")
-st.write("This is an example of how to set a background image in a Streamlit app.")
+#st.write("This is an example of how to set a background image in a Streamlit app.")
+
+
 
