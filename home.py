@@ -33,7 +33,14 @@ set_background_image('utils/background.jpg')
 
 # Example content to demonstrate the background
 st.title("Customer Churn Prediction App")
-#st.write("This is an example of how to set a background image in a Streamlit app.")
+
+st.markdown("<p style='color:black; font-style:italic;font-weight:bold;'>Helping you retain your business lifeline through customer management...</p>", unsafe_allow_html=True)
+
+# Sidebar for contact information
+st.sidebar.title("Contact Information")
+st.sidebar.markdown("<i class='fas fa-phone'></i> Phone: +2547000111", unsafe_allow_html=True)
+st.sidebar.markdown("<i class='fas fa-envelope'></i> Email: systems@cmmanagement.com", unsafe_allow_html=True)
+st.sidebar.markdown("<i class='fas fa-map-marker-alt'></i> Address: 1023 Moi Avenue, Nairobi, Kenya", unsafe_allow_html=True)
 
 
 
