@@ -1,39 +1,45 @@
+#Get the necessary libraries
 import streamlit as st
 import pandas as pd
 import joblib
 from sklearn.preprocessing import LabelEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
 
-
+# Page configaration
 st.set_page_config(
     page_title='Prediction Page',
     page_icon=':chat:',
     layout='wide'
 )
 
+# Page title
 st.title('Predict Churn Probability')
 
+
+# Loading the pipelines(models)
 @st.cache_resource()
 def load_forest_pipeline():
-    pipeline = joblib.load('./Models/forest_pipeline.joblib')
-    return pipeline
+    return joblib.load('./Models/forest_pipeline.joblib')
 
 @st.cache_resource()
 def load_logistic_pipeline():
-    pipeline = joblib.load('./Models/logistic_pipeline.joblib')
-    return pipeline
+    return joblib.load('./Models/logistic_pipeline.joblib')
 
+@st.cache_resource()
+def load_label_encoder():
+    return joblib.load('./Models/label_encoder.joblib')
+
+# Provide the select option
 def select_model(selected_model):
-    encoder = LabelEncoder()
-    encoder.classes_ = ['No', 'Yes']
-
     if selected_model == 'Random Forest':
         pipeline = load_forest_pipeline()
     else:
         pipeline = load_logistic_pipeline()
         
+    encoder = load_label_encoder()
     return pipeline, encoder
 
+#creat the predict function
 def make_prediction(pipeline, encoder):
     # Collect user input from session state
     user_input = {
@@ -46,18 +52,19 @@ def make_prediction(pipeline, encoder):
         'paymentmethod': st.session_state.get('payment_method'),
         'monthlycharges': st.session_state.get('monthly_charges'),
         'totalcharges': st.session_state.get('total_charges'),
-        'seniorcitizen': st.session_state.get('seniorcitizen', 0),
-        'paperlessbilling': st.session_state.get('paperlessbilling', 'No'),
-        'multiplelines': st.session_state.get('multiplelines', 'No'),
-        'onlinesecurity': st.session_state.get('onlinesecurity', 'No'),
-        'phoneservice': st.session_state.get('phoneservice', 'No'),
-        'deviceprotection': st.session_state.get('deviceprotection', 'No'),
-        'techsupport': st.session_state.get('techsupport', 'No'),
-        'streamingtv': st.session_state.get('streamingtv', 'No'),
-        'streamingmovies': st.session_state.get('streamingmovies', 'No'),
-        'onlinebackup': st.session_state.get('onlinebackup', 'No')
+        'seniorcitizen': st.session_state.get('seniorcitizen'),
+        'paperlessbilling': st.session_state.get('paperlessbilling'),
+        'multiplelines': st.session_state.get('multiplelines'),
+        'onlinesecurity': st.session_state.get('onlinesecurity'),
+        'phoneservice': st.session_state.get('phoneservice'),
+        'deviceprotection': st.session_state.get('deviceprotection'),
+        'techsupport': st.session_state.get('techsupport'),
+        'streamingtv': st.session_state.get('streamingtv'),
+        'streamingmovies': st.session_state.get('streamingmovies'),
+        'onlinebackup': st.session_state.get('onlinebackup')
     }
     
+    # create dataframe from the imput by users
     df = pd.DataFrame([user_input])
 
     # Extract expected columns from the preprocessor step in the pipeline
@@ -93,6 +100,7 @@ if 'prediction' not in st.session_state:
 if 'probability' not in st.session_state:
     st.session_state['probability'] = None
 
+#create a form
 def display_form():
     col1, col2= st.columns(2)
     with col1:

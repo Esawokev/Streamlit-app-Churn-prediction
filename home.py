@@ -8,12 +8,12 @@ st.set_page_config(
     page_icon=':house:'
 )
 
-# Function to load an image and return the base64 encoded string
+#Load an image and return the base64 encoded string
 def get_base64_encoded_image(image_path):
     with open('utils/background.jpg', "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# Function to set background image
+#set background image
 def set_background_image(image_path):
     img_base64 = get_base64_encoded_image(image_path)
     page_bg_img = f'''
@@ -31,8 +31,10 @@ def set_background_image(image_path):
 # Apply the background image
 set_background_image('utils/background.jpg')
 
-# Example content to demonstrate the background
+# Page title
 st.title("Customer Churn Prediction App")
+
+# Tagline
 
 st.markdown("<p style='color:black; font-style:italic;font-weight:bold;'>Helping you retain your business lifeline through customer management...</p>", unsafe_allow_html=True)
 
