@@ -4,6 +4,7 @@ import pandas as pd
 import joblib
 from sklearn.preprocessing import LabelEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
+import base64
 
 # Page configaration
 st.set_page_config(
@@ -12,6 +13,29 @@ st.set_page_config(
     layout='wide'
 )
 
+
+#Load an image and return the base64 encoded string
+def get_base64_encoded_image(image_path):
+    with open('utils/datapgbkgrnd.png', "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+#set background image
+def set_background_image(image_path):
+    img_base64 = get_base64_encoded_image(image_path)
+    page_bg_img = f'''
+    <style>
+    .stApp {{
+        background-image: url("data:image/png;base64,{img_base64}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    </style>
+    '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Apply the background image
+set_background_image('utils/datapgbkgrnd.png')
 # Page title
 st.title('Predict Churn Probability')
 
@@ -27,7 +51,7 @@ def load_logistic_pipeline():
 
 @st.cache_resource()
 def load_label_encoder():
-    return joblib.load('./Models/label_encoder.joblib')
+    return joblib.load('./Models/encoder.joblib')
 
 # Provide the select option
 def select_model(selected_model):
@@ -114,7 +138,7 @@ def display_form():
         with st.expander("Customer Info"):
             col1, col2 = st.columns(2)
             with col1:
-                st.selectbox('Senior Citizen', options=[0, 1], key='seniorcitizen')
+                st.selectbox('Senior Citizen', options=[('No'), ('Yes')], key='seniorcitizen')
                 st.selectbox('Gender', options=['Male', 'Female'], key='gender')
                 st.selectbox('Partner', options=['Yes', 'No'], key='marital_status')
                 st.selectbox('Dependents', options=['Yes', 'No'], key='dependents')

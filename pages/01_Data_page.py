@@ -1,12 +1,37 @@
 import streamlit as st
 import pyodbc
 import pandas as pd
+import base64
  
 st.set_page_config(
     page_title='Data Page',
     layout='wide'
 )
  
+
+#Load an image and return the base64 encoded string
+def get_base64_encoded_image(image_path):
+    with open('utils/predbkgrnd.png', "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+#set background image
+def set_background_image(image_path):
+    img_base64 = get_base64_encoded_image(image_path)
+    page_bg_img = f'''
+    <style>
+    .stApp {{
+        background-image: url("data:image/png;base64,{img_base64}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    </style>
+    '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Apply the background image
+set_background_image('utils/predbkgrnd.png')
+
 st.title('Telco Customer Churn Database')
  
 @st.cache_resource(show_spinner='connecting to database...')
