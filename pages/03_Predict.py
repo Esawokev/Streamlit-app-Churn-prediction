@@ -5,6 +5,8 @@ import joblib
 from sklearn.preprocessing import LabelEncoder
 from imblearn.pipeline import Pipeline as ImbPipeline
 import base64
+import os
+import datetime
 
 # Page configaration
 st.set_page_config(
@@ -53,17 +55,17 @@ def load_logistic_pipeline():
 def load_label_encoder():
     return joblib.load('./Models/encoder.joblib')
 
-# Provide the select option
+# Function to select model
 def select_model(selected_model):
     if selected_model == 'Random Forest':
         pipeline = load_forest_pipeline()
     else:
         pipeline = load_logistic_pipeline()
         
-    encoder = load_label_encoder()
+    encoder = LabelEncoder()  # Assuming you're using a label encoder
     return pipeline, encoder
 
-#creat the predict function
+# Function to make prediction
 def make_prediction(pipeline, encoder):
     # Collect user input from session state
     user_input = {
@@ -87,8 +89,8 @@ def make_prediction(pipeline, encoder):
         'streamingmovies': st.session_state.get('streamingmovies'),
         'onlinebackup': st.session_state.get('onlinebackup')
     }
-    
-    # create dataframe from the imput by users
+
+    # Create dataframe from the input by users
     df = pd.DataFrame([user_input])
 
     # Extract expected columns from the preprocessor step in the pipeline
@@ -112,7 +114,7 @@ def make_prediction(pipeline, encoder):
         pred_proba = pipeline.predict_proba(df)
         decoded_pred = encoder.inverse_transform(pred)
         st.session_state['prediction'] = decoded_pred[0]  # Save the first prediction only
-        st.session_state['probability'] = pred_proba[0][1]*100 
+        st.session_state['probability'] = pred_proba[0]  # Save the probability array
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")
         st.session_state['prediction'] = None
@@ -124,21 +126,20 @@ if 'prediction' not in st.session_state:
 if 'probability' not in st.session_state:
     st.session_state['probability'] = None
 
-#create a form
+# Create a form
 def display_form():
-    col1, col2= st.columns(2)
+    col1, col2 = st.columns(2)
     with col1:
         selected_model = st.selectbox('Select a model', options=['Random Forest', 'Logistic Regression'], key='selected_model')
     global pipeline, encoder
     pipeline, encoder = select_model(selected_model)
-    encoder.fit(['No', 'Yes'])
 
     with st.form('input_features'):
         st.write('### Family Information')
         with st.expander("Customer Info"):
             col1, col2 = st.columns(2)
             with col1:
-                st.selectbox('Senior Citizen', options=[('No'), ('Yes')], key='seniorcitizen')
+                st.selectbox('Senior Citizen', options=['No', 'Yes'], key='seniorcitizen')
                 st.selectbox('Gender', options=['Male', 'Female'], key='gender')
                 st.selectbox('Partner', options=['Yes', 'No'], key='marital_status')
                 st.selectbox('Dependents', options=['Yes', 'No'], key='dependents')
@@ -151,8 +152,8 @@ def display_form():
                 st.selectbox('Select your contract type', options=['Month-to-month', 'One year', 'Two year'], key='contract')
                 st.selectbox('What is your mode of payment?', options=['Electronic check', 'Mailed check', 'Bank transfer (automatic)', 'Credit card (automatic)'], key='payment_method')
             with col2:
-                st.number_input('What are your monthly charges?', key='monthly_charges', min_value=18.34, max_value=118.65,step=10.00)
-                st.number_input('What are the total charges?', key='total_charges', min_value=18.80, max_value=8670.10,step=100.00)
+                st.number_input('What are your monthly charges?', key='monthly_charges', min_value=18.34, max_value=118.65, step=10.00)
+                st.number_input('What are the total charges?', key='total_charges', min_value=18.80, max_value=8670.10, step=100.00)
                 st.number_input('How many months have you been a client?', key='tenure', min_value=0, max_value=72, step=6)
 
         st.write('### Additional Services')
@@ -166,21 +167,74 @@ def display_form():
             with col2:
                 st.selectbox('Online Security', options=['Yes', 'No'], key='onlinesecurity')
                 st.selectbox('Online Backup', options=['Yes', 'No'], key='onlinebackup')
-                
                 st.selectbox('Tech Support', options=['Yes', 'No'], key='techsupport')
                 st.selectbox('Streaming TV', options=['Yes', 'No'], key='streamingtv')
                 st.selectbox('Streaming Movies', options=['Yes', 'No'], key='streamingmovies')
-                
 
         st.form_submit_button('Submit', on_click=make_prediction, kwargs=dict(pipeline=pipeline, encoder=encoder))
 
 if __name__ == "__main__":
-    display_form()
-    final_prediction = st.session_state.get('prediction')
-    final_probability = st.session_state.get('probability')
+    display_form()  
 
-    if final_prediction is None:
-        st.write('### No prediction available')
+    if 'prediction' in st.session_state and st.session_state['prediction'] is not None:
+        final_prediction = st.session_state['prediction']
     else:
-        st.write(f'## Prediction: {final_prediction}')
-        st.write(f'## Probability of this customer churnning is: {final_probability:.2f}%')
+        final_prediction = None
+
+    if 'probability' in st.session_state and st.session_state['probability'] is not None:
+        probability_of_yes = st.session_state['probability'][1] * 100
+        probability_of_no = st.session_state['probability'][0] * 100
+    else:
+        probability_of_yes = None
+        probability_of_no = None
+
+    if final_prediction is None or probability_of_yes is None or probability_of_no is None:
+        st.write("### Predictions will show here")
+        st.divider()
+    else:
+        if final_prediction == 'Yes':
+            st.write(f'### {final_prediction}')
+            st.write(f'### {round(probability_of_yes, 2)}%')
+        else:
+            st.write(f'### {final_prediction}')
+            st.write(f'### {round(probability_of_no, 2)}%')
+    
+    st.divider()
+
+    if final_prediction is not None and probability_of_yes is not None and probability_of_no is not None:
+        user_input = {
+            'gender': st.session_state.get('gender'),
+            'marital_status': st.session_state.get('marital_status'),
+            'dependents': st.session_state.get('dependents'),
+            'internetservice': st.session_state.get('internetservice'),
+            'contract': st.session_state.get('contract'),
+            'tenure': st.session_state.get('tenure'),
+            'paymentmethod': st.session_state.get('payment_method'),
+            'monthlycharges': st.session_state.get('monthly_charges'),
+            'totalcharges': st.session_state.get('total_charges'),
+            'seniorcitizen': st.session_state.get('seniorcitizen'),
+            'paperlessbilling': st.session_state.get('paperlessbilling'),
+            'multiplelines': st.session_state.get('multiplelines'),
+            'onlinesecurity': st.session_state.get('onlinesecurity'),
+            'phoneservice': st.session_state.get('phoneservice'),
+            'deviceprotection': st.session_state.get('deviceprotection'),
+            'techsupport': st.session_state.get('techsupport'),
+            'streamingtv': st.session_state.get('streamingtv'),
+            'streamingmovies': st.session_state.get('streamingmovies'),
+            'onlinebackup': st.session_state.get('onlinebackup')
+        }
+
+        df = pd.DataFrame([user_input])
+        df['prediction'] = final_prediction
+
+        if final_prediction == 'No':
+            df['probability'] = f'{round(probability_of_no, 2)}'
+        else:
+            df['probability'] = f'{round(probability_of_yes, 2)}'
+
+        df['time_of_prediction'] = datetime.date.today()
+        df['model_used'] = st.session_state['selected_model']
+
+        data_dir = './data'
+        os.makedirs(data_dir, exist_ok=True)
+        df.to_csv(os.path.join(data_dir, 'history.csv'), mode='a', header=not os.path.exists(os.path.join(data_dir, 'history.csv')), index=False)
