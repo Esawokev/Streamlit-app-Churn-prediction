@@ -1,0 +1,14 @@
+
+/* style.css */
+
+page_bg_img="""
+<style>
+body{
+    background-image:url("C:/Users/lucky/Desktop/LP4/Streamlit-Model-deployment/Streamlit-app-Churn-prediction/Utils/background.jpg");
+    background-size:cover;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+}
+</style>
+"""
+st.markdown(page_bg_img, unsafe_allow_html=True)
